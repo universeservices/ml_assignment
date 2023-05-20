@@ -16,5 +16,20 @@ class PredictRequest(BaseModel):
 
 @app.post(path="/predict")
 async def predict(request: PredictRequest):
-    # Write your code here to translate input into V2 protocol and send it to model_deployed_url
-    return {}
+    # Convert the input to V2 protocol
+    v2_input = {
+        "hf_pipeline": request.hf_pipeline,
+        "inputs": request.inputs,
+        "parameters": request.parameters,
+    }
+
+    # Send the input to the model
+    response = await httpx.post(request.model_deployed_url, json=v2_input)
+    response.raise_for_status()
+
+    # Return the response from the model
+    return response.json()
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
